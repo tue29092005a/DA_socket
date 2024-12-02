@@ -25,11 +25,11 @@ def recv_file_from_client(conn , addr):
 
     """transfer file"""
     bar  = tqdm(range(fileSize), f"RECV in {newFile}", unit = "B", unit_scale = True, unit_divisor = fileSize)
-    ofile = open(newFile, "w")
+    ofile = open(newFile, "wb")
     if  ofile.closed :
         print("cannot open")
     while True:
-        data = conn.recv(SIZE).decode(FORMAT)
+        data = conn.recv(SIZE)
         if not data : 
                 break
         ofile.write(data)
@@ -38,6 +38,42 @@ def recv_file_from_client(conn , addr):
         bar.update(len(data))
     ofile.close()
 
+### yc 2
+def send_file_to_client(conn):
+    # fileName = r"D:\MMT\DA_Socket_v2\client_file\friends-final.txt"
+    #TODO make send file name in here
+    fileName  = conn.recv(SIZE).decode(FORMAT)
+    path = os.getcwd()
+    fileServer = path +"\\server_file" + "\\" + fileName
+    # fileServer  = "D:\MMT\DA_Socket_v2\server_file\file1.txt"
+    print(f"file server {fileServer}")
+    #send file size
+    fileSize = -1
+    if os.path.isfile(fileServer) == True :
+
+        fileSize = os.path.getsize(fileServer)
+        # print(fileSize)
+        conn.send(fileSize.encode(FORMAT))
+    else:
+        print("file not valid")
+        conn.send("-1".encode(FORMAT))
+        return
+    """Data transfer"""
+    # bar = tqdm(range(fileSize), f"Sending {fileServer}", unit="B", unit_scale=True, unit_divisor=SIZE)
+    # nhan thong bao thanh cong
+    print(conn.recv(SIZE).decode(FORMAT))
+    #TODO lam 1 cai input file
+    ifile = open(fileServer, "rb")
+    while True:
+        data = ifile.read(SIZE)
+        if not data:
+            break
+        conn.send(data)
+        msg = conn.recv(SIZE).decode(FORMAT)
+        # cap nhat bar
+        # bar.update(len(data))
+    print(msg)
+    ifile.close()
 def main():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 
@@ -58,10 +94,13 @@ def main():
             request = conn.recv(SIZE).decode(FORMAT)
             print(request)
             # thr = threading.Thread(target=handleClient, args=(conn,addr))
-            if(request == "SEND_FILE"):
+            if(request == "UPLD"):
                  thr = threading.Thread(target= recv_file_from_client, args=(conn,addr))
-                 thr.daemon = False
                  thr.start()
+            elif (request == "DOWNLD"):
+                # thr = threading.Thread(target = send_file_to_client, agrs =(conn, addr))
+                # thr.start()
+                send_file_to_client(conn)
 
         except:
             print("Error")
