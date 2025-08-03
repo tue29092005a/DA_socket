@@ -14,7 +14,7 @@ def send_file_to_server(conn):
     fileServer = fileName.rsplit("\\",1)
     fileServer = fileServer[1]
     fileSize = os.path.getsize(fileName)
-    fileInfo = f"{fileServer}|{fileSize}"
+    fileInfo = f"{fileServer}|{fileSize}"#gdfgdgfd
     conn.send(fileInfo.encode(FORMAT))  
 
     """Data transfer"""
